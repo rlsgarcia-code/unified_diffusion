@@ -1,0 +1,16 @@
+services:
+  udiff-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      UDIFF_CACHE_DIR: /cache
+      UDIFF_OUTPUT_DIR: /outputs
+      UNIFIED_DIFFUSION_REGISTRY_PATH: /app/custom-models.json
+    volumes:
+      - ./custom-models.json:/app/custom-models.json
+      - ${HOME}/.cache/unified-diffusion:/cache
+      - ${HOME}/models:/models
+      - ./outputs:/outputs

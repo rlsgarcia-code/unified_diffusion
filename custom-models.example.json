@@ -1,0 +1,74 @@
+{
+  "research.sdxl.derivative": {
+    "provider": "diffusers",
+    "source": "org-or-user/sdxl-derivative-repo",
+    "pipeline_type": "stable-diffusion-xl",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license and model card before use.",
+    "notes": "Example entry for an SDXL-compatible checkpoint discovered manually."
+  },
+  "research.sd15.derivative": {
+    "provider": "diffusers",
+    "source": "org-or-user/sd15-derivative-repo",
+    "pipeline_type": "stable-diffusion",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license and model card before use.",
+    "notes": "Example entry for an SD 1.5 style checkpoint."
+  },
+  "research.sd21.derivative": {
+    "provider": "diffusers",
+    "source": "org-or-user/sd21-derivative-repo",
+    "pipeline_type": "stable-diffusion",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license and model card before use.",
+    "notes": "Example entry for an SD 2.x style checkpoint."
+  },
+  "research.pixart.alpha.variant": {
+    "provider": "diffusers",
+    "source": "org-or-user/pixart-alpha-variant",
+    "pipeline_type": "pixart-alpha",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license and model card before use.",
+    "notes": "Example entry for a PixArt Alpha compatible model."
+  },
+  "research.pixart.sigma.variant": {
+    "provider": "diffusers",
+    "source": "org-or-user/pixart-sigma-variant",
+    "pipeline_type": "pixart-sigma",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license and model card before use.",
+    "notes": "Example entry for a PixArt Sigma compatible model."
+  },
+  "research.sd3.variant": {
+    "provider": "diffusers",
+    "source": "org-or-user/sd3-variant",
+    "pipeline_type": "stable-diffusion-3",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license, gating and model card before use.",
+    "notes": "Example entry for a Stable Diffusion 3 compatible model."
+  },
+  "research.flux.variant": {
+    "provider": "flux",
+    "source": "org-or-user/flux-variant",
+    "pipeline_type": "flux",
+    "default_revision": "main",
+    "license_hint": "Verify the upstream license, gating and model card before use.",
+    "notes": "Example entry for a FLUX-compatible model. Requires environment support for FluxPipeline."
+  },
+  "local.sdxl.dir.example": {
+    "provider": "diffusers",
+    "source": "~/models/civitai/my-sdxl-dir",
+    "pipeline_type": "stable-diffusion-xl",
+    "default_revision": "main",
+    "license_hint": "Verify the creator license and terms before use.",
+    "notes": "Example local directory source. Prefer this when you have a full diffusers-compatible folder."
+  },
+  "local.sdxl.file.example": {
+    "provider": "diffusers",
+    "source": "~/models/civitai/my-sdxl/model.safetensors",
+    "pipeline_type": "stable-diffusion-xl",
+    "default_revision": "main",
+    "license_hint": "Verify the creator license and terms before use.",
+    "notes": "Example local single-file source. A .safetensors checkpoint can work when the pipeline supports from_single_file()."
+  }
+}

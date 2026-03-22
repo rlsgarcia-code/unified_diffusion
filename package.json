@@ -1,0 +1,13 @@
+{
+  "name": "unified-diffusion-dev-scripts",
+  "private": true,
+  "scripts": {
+    "up:docker": "docker compose -f docker-compose.api.yml up --build",
+    "down:docker": "docker compose -f docker-compose.api.yml down",
+    "logs:docker": "docker compose -f docker-compose.api.yml logs -f",
+    "up:api": "uv run uvicorn service.fastapi_app.main:app --host 0.0.0.0 --port 8000",
+    "test:api": "uv run pytest -q tests/test_fastapi_api.py",
+    "smoke:api:local": "./scripts/smoke_api_local.sh",
+    "smoke:api:docker": "./scripts/smoke_api_docker.sh"
+  }
+}

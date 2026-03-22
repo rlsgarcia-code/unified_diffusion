@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unified_diffusion"
+version = "0.1.0"
+description = "Unified diffusion API with lazy downloads and deterministic cache"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "Robinson Luiz Souza Garca" }
+]
+dependencies = [
+  "torch>=2.1",
+  "accelerate>=0.30.0",
+  "diffusers>=0.30.0",
+  "transformers>=4.39.0",
+  "huggingface_hub>=0.24.0",
+  "safetensors>=0.4.0",
+  "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+flux = [
+  "sentencepiece>=0.2.0",
+]
+api = [
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+]
+
+[project.scripts]
+udiff = "unified_diffusion.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.5.0",
+  "mypy>=1.10.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["unified_diffusion*"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true
