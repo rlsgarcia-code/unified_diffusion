@@ -4,6 +4,18 @@ All notable changes to this project should be documented in this file.
 
 The format is intentionally simple and lightweight.
 
+## [Unreleased]
+
+### Added
+
+- Swagger UI is now an explicit API entrypoint at `/docs`, with `/` redirecting to the interactive docs
+- HTTP API schemas now document request and response payloads for `/models`, `/practices`, `/verify-file`, and `/register-local`
+- Interactive API documentation now covers the full local model registration flow, including verifying a `.safetensors` file, registering a canonical id, and using it in `/generate`
+
+### Changed
+
+- Top-level and integration documentation now point users to the Swagger/OpenAPI workflow for testing endpoints and registering local models
+
 ## [0.1.0] - 2026-03-21
 
 ### Added
