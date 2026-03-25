@@ -79,6 +79,46 @@ Guia detalhado de uso dos modelos:
 - [`CHANGELOG.md`](/Users/robinsongarcia/projects/unified_diffusion/CHANGELOG.md)
 - [`RELEASE_PROCESS.md`](/Users/robinsongarcia/projects/unified_diffusion/docs/RELEASE_PROCESS.md)
 
+## API HTTP e Swagger
+
+O repositório também expõe uma API HTTP via FastAPI.
+
+Suba a API:
+
+```bash
+npm run up:api
+```
+
+Ou:
+
+```bash
+uv run uvicorn service.fastapi_app.main:app --host 0.0.0.0 --port 8000
+```
+
+Depois abra no navegador:
+
+- raiz da API: `http://127.0.0.1:8000/`
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
+
+A raiz agora redireciona para Swagger UI, e o `/docs` permite testar todos os endpoints interativamente, incluindo:
+
+- `/models`
+- `/practices`
+- `/verify-file`
+- `/register-local`
+- `/generate`
+
+O fluxo recomendado para modelo local via Swagger é:
+
+1. chamar `/verify-file` com o caminho do `.safetensors` e, se tiver, o SHA-256
+2. chamar `/register-local` para mover o arquivo para `~/models/civitai/<slug>/model.safetensors` e atualizar o registry JSON
+3. confirmar o novo `canonical_id` em `/models`
+4. usar o `canonical_id` em `/generate`
+
+Guia curto da API:
+
+- [`API_QUICKREF.md`](/Users/robinsongarcia/projects/unified_diffusion/docs/API_QUICKREF.md)
 
 
 ## Registry customizado

@@ -172,6 +172,37 @@ Regra prática:
 - SD3: `stable-diffusion-3`
 - FLUX: `flux`
 
+## Como usar a API HTTP com documentação interativa
+
+Se a aplicação terceira preferir integrar via HTTP em vez de importar Python diretamente, suba a API:
+
+```bash
+uv run uvicorn service.fastapi_app.main:app --host 0.0.0.0 --port 8000
+```
+
+Pontos de acesso:
+
+- `http://127.0.0.1:8000/` redireciona para Swagger UI
+- `http://127.0.0.1:8000/docs` abre a interface interativa
+- `http://127.0.0.1:8000/openapi.json` expõe o schema OpenAPI
+
+No Swagger UI já é possível testar diretamente:
+
+- `/models`
+- `/practices`
+- `/verify-file`
+- `/register-local`
+- `/generate`
+
+Fluxo recomendado para um modelo local novo:
+
+1. usar `/verify-file` para checar o `.safetensors`
+2. usar `/register-local` para mover o arquivo e registrar o `canonical_id`
+3. validar o novo id via `/models`
+4. enviar esse id em `/generate`
+
+O endpoint `/register-local` devolve o `canonical_id`, o `registry_path`, o caminho final do arquivo e um `sample_command` com o próximo passo.
+
 ## Boas práticas para a aplicação terceira
 
 - mantenha o cache em `~/.cache/unified-diffusion` ou outro diretório externo ao repo

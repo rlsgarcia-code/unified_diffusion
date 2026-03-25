@@ -31,6 +31,20 @@ class FakeDiffusion:
 client = TestClient(app)
 
 
+def test_root_redirects_to_docs() -> None:
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code in {302, 307}
+    assert response.headers["location"] == "/docs"
+
+
+def test_docs_page_is_available() -> None:
+    response = client.get("/docs")
+
+    assert response.status_code == 200
+    assert "Swagger UI" in response.text
+
+
 def test_health() -> None:
     response = client.get("/health")
 
@@ -63,6 +77,7 @@ def test_openapi_exposes_examples() -> None:
     assert "example" in schemas["GenerateRequestBody"]
     assert "example" in schemas["VerifyFileRequestBody"]
     assert "example" in schemas["RegisterLocalRequestBody"]
+    assert "example" in schemas["RegisterLocalResponseBody"]
 
 
 def test_openapi_exposes_error_examples() -> None:
@@ -73,6 +88,22 @@ def test_openapi_exposes_error_examples() -> None:
     generate_post = payload["paths"]["/generate"]["post"]
     assert "400" in generate_post["responses"]
     assert "example" in generate_post["responses"]["400"]["content"]["application/json"]
+
+
+def test_openapi_lists_register_local_in_docs() -> None:
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    payload = response.json()
+    register_post = payload["paths"]["/register-local"]["post"]
+    assert register_post["summary"] == "Register and move a local safetensors file"
+    assert register_post["requestBody"]["content"]["application/json"]["schema"]["$ref"].endswith(
+        "/RegisterLocalRequestBody"
+    )
+    response_schema_ref = register_post["responses"]["200"]["content"]["application/json"][
+        "schema"
+    ]["$ref"]
+    assert response_schema_ref.endswith("/RegisterLocalResponseBody")
 
 
 def test_verify_file(tmp_path: Path) -> None:

@@ -3,15 +3,25 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 
 from service.fastapi_app.schemas import (
     GenerateRequestBody,
     GenerateResponseBody,
     HealthResponseBody,
+    ModelsResponseBody,
+    PracticesResponseBody,
     RegisterLocalRequestBody,
+    RegisterLocalResponseBody,
     VerifyFileRequestBody,
+    VerifyFileResponseBody,
 )
-from unified_diffusion import Diffusion, GenerateRequest, ModelNotFoundError, ProviderError
+from unified_diffusion import (
+    Diffusion,
+    GenerateRequest,
+    ModelNotFoundError,
+    ProviderError,
+)
 from unified_diffusion.operations import (
     best_usage_practices,
     configure_registry_path,
@@ -26,8 +36,12 @@ app = FastAPI(
     version="0.1.0",
     description=(
         "Thin HTTP layer over unified_diffusion. "
-        "Use /docs for interactive examples and /practices for operational guidance."
+        "Open `/docs` to run every endpoint interactively, including local model registration."
     ),
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    swagger_ui_parameters={"displayRequestDuration": True, "tryItOutEnabled": True},
 )
 
 BAD_REQUEST_RESPONSE = {
@@ -53,35 +67,57 @@ def _engine() -> Diffusion:
     return Diffusion(cache_dir=settings.cache_dir)
 
 
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    return RedirectResponse(url="/docs")
+
+
 @app.get("/health", response_model=HealthResponseBody, summary="Health check")
 def health() -> HealthResponseBody:
     return HealthResponseBody()
 
 
-@app.get("/models", summary="List available model ids")
-def models() -> dict[str, list[str]]:
-    payload = {"models": _engine().list_models()}
-    log_event("api.models", count=len(payload["models"]))
+@app.get(
+    "/models",
+    response_model=ModelsResponseBody,
+    summary="List available model ids",
+    description="Returns the built-in and custom canonical model ids available to `/generate`.",
+)
+def models() -> ModelsResponseBody:
+    payload = ModelsResponseBody(models=_engine().list_models())
+    log_event("api.models", count=len(payload.models))
     return payload
 
 
-@app.get("/practices", summary="Show best usage practices")
-def practices() -> dict[str, list[str]]:
-    payload = {"practices": best_usage_practices()}
-    log_event("api.practices", count=len(payload["practices"]))
+@app.get(
+    "/practices",
+    response_model=PracticesResponseBody,
+    summary="Show best usage practices",
+    description=(
+        "Operational guidance for verifying, registering, and generating "
+        "with local models."
+    ),
+)
+def practices() -> PracticesResponseBody:
+    payload = PracticesResponseBody(practices=best_usage_practices())
+    log_event("api.practices", count=len(payload.practices))
     return payload
 
 
 @app.post(
     "/verify-file",
+    response_model=VerifyFileResponseBody,
     summary="Verify a local safetensors file",
+    description="Computes the SHA-256 of a local checkpoint and optionally validates it.",
     responses=BAD_REQUEST_RESPONSE,
 )
-def verify_file(request: VerifyFileRequestBody) -> dict[str, str]:
+def verify_file(request: VerifyFileRequestBody) -> VerifyFileResponseBody:
     try:
-        return verify_local_file(
-            source_path=Path(request.path).expanduser(),
-            expected_sha256=request.sha256,
+        return VerifyFileResponseBody(
+            **verify_local_file(
+                source_path=Path(request.path).expanduser(),
+                expected_sha256=request.sha256,
+            )
         )
     except (FileNotFoundError, ValueError) as exc:
         log_event("api.verify_file_failed", path=request.path, error=str(exc))
@@ -90,23 +126,30 @@ def verify_file(request: VerifyFileRequestBody) -> dict[str, str]:
 
 @app.post(
     "/register-local",
+    response_model=RegisterLocalResponseBody,
     summary="Register and move a local safetensors file",
+    description=(
+        "Moves a local `.safetensors` file into the managed models directory and "
+        "writes a registry entry so the new canonical id appears in `/models`."
+    ),
     responses=BAD_REQUEST_RESPONSE,
 )
-def register_local(request: RegisterLocalRequestBody) -> dict[str, str]:
+def register_local(request: RegisterLocalRequestBody) -> RegisterLocalResponseBody:
     try:
-        return register_local_model_entry(
-            source_path=Path(request.path).expanduser(),
-            registry_path=Path(request.registry_path).expanduser(),
-            models_dir=Path(request.models_dir).expanduser(),
-            model_slug=request.model_slug,
-            canonical_id=request.canonical_id,
-            provider=request.provider,
-            pipeline_type=request.pipeline_type,
-            default_revision=request.default_revision,
-            license_hint=request.license_hint,
-            notes=request.notes,
-            expected_sha256=request.sha256,
+        return RegisterLocalResponseBody(
+            **register_local_model_entry(
+                source_path=Path(request.path).expanduser(),
+                registry_path=Path(request.registry_path).expanduser(),
+                models_dir=Path(request.models_dir).expanduser(),
+                model_slug=request.model_slug,
+                canonical_id=request.canonical_id,
+                provider=request.provider,
+                pipeline_type=request.pipeline_type,
+                default_revision=request.default_revision,
+                license_hint=request.license_hint,
+                notes=request.notes,
+                expected_sha256=request.sha256,
+            )
         )
     except (FileNotFoundError, ValueError, FileExistsError) as exc:
         log_event("api.register_local_failed", path=request.path, error=str(exc))

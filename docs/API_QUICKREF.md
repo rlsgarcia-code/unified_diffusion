@@ -35,6 +35,7 @@ docker compose -f docker-compose.api.yml up --build
 O compose expõe:
 
 - API em `http://127.0.0.1:8000`
+- Swagger UI em `http://127.0.0.1:8000/docs`
 - cache em `${HOME}/.cache/unified-diffusion`
 - modelos locais em `${HOME}/models`
 - outputs em `./outputs`
@@ -94,6 +95,12 @@ Swagger UI:
 open http://127.0.0.1:8000/docs
 ```
 
+Abrir a raiz da API no navegador também redireciona para Swagger UI:
+
+```bash
+open http://127.0.0.1:8000/
+```
+
 OpenAPI JSON:
 
 ```bash
@@ -105,6 +112,12 @@ Os schemas da API agora incluem exemplos prontos para:
 - `/generate`
 - `/verify-file`
 - `/register-local`
+
+O endpoint `/register-local` também expõe schema de resposta, então o Swagger mostra exatamente:
+
+- onde o arquivo foi movido
+- qual `canonical_id` ficou registrado
+- qual comando usar em seguida para testar o novo modelo
 
 ## Listar modelos
 
