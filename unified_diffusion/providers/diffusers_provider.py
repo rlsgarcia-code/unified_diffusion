@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from unified_diffusion.cache.manager import CacheManager, LocalModelRef
+from unified_diffusion.defaults import DEFAULT_GENERATE_DEVICE
 from unified_diffusion.errors import ProviderError
 from unified_diffusion.providers.base import BaseProvider, LoadedPipeline
 from unified_diffusion.registry.models import ModelSpec
@@ -365,6 +366,9 @@ class DiffusersProvider(BaseProvider):
             )
             if available:
                 return "mps", warnings
+            if requested_device == DEFAULT_GENERATE_DEVICE:
+                warnings.append("Default MPS preference unavailable; falling back to CPU.")
+                return "cpu", warnings
             raise ProviderError(
                 "MPS was requested explicitly but is not available on this machine."
             )

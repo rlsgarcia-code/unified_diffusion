@@ -38,6 +38,26 @@ Se `custom-models.json` estiver no diretório atual, `udiff` tenta usar esse arq
 
 ## Rodar imagem
 
+O `udiff run` agora usa o mesmo default do endpoint HTTP `/generate`. Sem argumentos, ele assume:
+
+- `model=sdxl.base`
+- `prompt="a dramatic product photo, studio lighting, clean background"`
+- `negative_prompt="blurry, low quality"`
+- `width=1024`
+- `height=1024`
+- `steps=30`
+- `guidance_scale=6.5`
+- `seed=1234`
+- `device=mps`
+- `dtype=fp16`
+- `out=/Users/robinsongarcia/Desktop/out.png`
+
+Modo totalmente default:
+
+```bash
+uv run udiff run
+```
+
 Modo direto:
 
 ```bash
@@ -58,6 +78,8 @@ Só gerar o comando:
 ```bash
 uv run udiff guided-run --emit command
 ```
+
+O comando emitido agora inclui explicitamente os mesmos defaults do HTTP e do `udiff run`.
 
 ## Registrar modelo local
 

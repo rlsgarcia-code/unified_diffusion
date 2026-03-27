@@ -164,6 +164,30 @@ curl -sS http://127.0.0.1:8000/register-local \
 
 ## Gerar imagem
 
+O endpoint `/generate` agora aceita corpo omitido ou `{}` e usa por padrão:
+
+```json
+{
+  "device": "mps",
+  "dtype": "fp16",
+  "guidance_scale": 6.5,
+  "height": 1024,
+  "model": "sdxl.base",
+  "negative_prompt": "blurry, low quality",
+  "output_path": "/Users/robinsongarcia/Desktop/out.png",
+  "prompt": "a dramatic product photo, studio lighting, clean background",
+  "seed": 1234,
+  "steps": 30,
+  "width": 1024
+}
+```
+
+Para inspecionar o schema/defaults sem disparar geração real:
+
+```bash
+curl -sS http://127.0.0.1:8000/openapi.json
+```
+
 Exemplo local, ideal para usar `mps`:
 
 ```bash
@@ -174,8 +198,19 @@ curl -sS http://127.0.0.1:8000/generate \
     "prompt": "a dramatic product photo, studio lighting, clean background",
     "device": "mps",
     "dtype": "fp16",
-    "output_path": "/Users/seu-user/Desktop/out.png"
+    "negative_prompt": "blurry, low quality",
+    "guidance_scale": 6.5,
+    "seed": 1234,
+    "output_path": "/Users/robinsongarcia/Desktop/out.png"
   }'
+```
+
+Exemplo usando o corpo default:
+
+```bash
+curl -sS http://127.0.0.1:8000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{}'
 ```
 
 Exemplo com modelo custom:

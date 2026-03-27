@@ -2,52 +2,63 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from unified_diffusion.defaults import (
+    DEFAULT_GENERATE_OUTPUT_PATH,
+    DEFAULT_GENERATE_REQUEST_PAYLOAD,
+)
+
+DEFAULT_GENERATE_REQUEST_EXAMPLE = DEFAULT_GENERATE_REQUEST_PAYLOAD
+
 
 class GenerateRequestBody(BaseModel):
-    model: str = Field(description="Canonical model id, for example `sdxl.base`.")
-    prompt: str = Field(description="Positive text prompt sent to the selected model.")
+    model: str = Field(
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["model"],
+        description="Canonical model id, for example `sdxl.base`.",
+    )
+    prompt: str = Field(
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["prompt"],
+        description="Positive text prompt sent to the selected model.",
+    )
     negative_prompt: str | None = Field(
-        default=None,
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["negative_prompt"],
         description="Optional negative prompt used by providers that support it.",
     )
     width: int = Field(default=1024, description="Requested output width in pixels.")
     height: int = Field(default=1024, description="Requested output height in pixels.")
     steps: int = Field(default=30, description="Inference step count.")
-    guidance_scale: float = Field(default=7.0, description="Classifier-free guidance scale.")
+    guidance_scale: float = Field(
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["guidance_scale"],
+        description="Classifier-free guidance scale.",
+    )
     seed: int | None = Field(
-        default=None,
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["seed"],
         description="Optional deterministic seed. When omitted the provider chooses one.",
     )
     device: str | None = Field(
-        default=None,
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["device"],
         description="Optional device override such as `cpu`, `cuda`, or `mps`.",
     )
     dtype: str | None = Field(
-        default=None,
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["dtype"],
         description="Optional dtype override such as `fp16`, `bf16`, or `fp32`.",
     )
     output_path: str | None = Field(
-        default=None,
-        description="Optional output image path. Defaults to `UDIFF_OUTPUT_DIR/out.png`.",
+        default=DEFAULT_GENERATE_REQUEST_EXAMPLE["output_path"],
+        description=(
+            "Optional output image path. Defaults to "
+            f"`{DEFAULT_GENERATE_OUTPUT_PATH}` for the API default request."
+        ),
     )
 
     model_config = {
         "json_schema_extra": {
-            "example": {
-                "model": "sdxl.base",
-                "prompt": "a dramatic product photo, studio lighting, clean background",
-                "negative_prompt": "blurry, low quality",
-                "width": 1024,
-                "height": 1024,
-                "steps": 30,
-                "guidance_scale": 6.5,
-                "seed": 1234,
-                "device": "mps",
-                "dtype": "fp16",
-                "output_path": "/Users/seu-user/Desktop/out.png",
-            }
+            "example": DEFAULT_GENERATE_REQUEST_EXAMPLE
         }
     }
+
+
+def build_default_generate_request_body() -> GenerateRequestBody:
+    return GenerateRequestBody(**DEFAULT_GENERATE_REQUEST_EXAMPLE)
 
 
 class VerifyFileRequestBody(BaseModel):
@@ -141,10 +152,12 @@ class GenerateResponseBody(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "out": "/Users/seu-user/Desktop/out.png",
+                "out": DEFAULT_GENERATE_OUTPUT_PATH,
                 "model": "sdxl.base@main",
                 "provider": "diffusers",
-                "cache_path": "/Users/seu-user/.cache/unified-diffusion/models/sdxl.base/main",
+                "cache_path": (
+                    "/Users/robinsongarcia/.cache/unified-diffusion/models/sdxl.base/main"
+                ),
             }
         }
     }

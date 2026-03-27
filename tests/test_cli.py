@@ -12,10 +12,25 @@ from unified_diffusion.cli import (
     register_local_model,
     verify_local_file,
 )
+from unified_diffusion.defaults import (
+    DEFAULT_GENERATE_DEVICE,
+    DEFAULT_GENERATE_DTYPE,
+    DEFAULT_GENERATE_GUIDANCE_SCALE,
+    DEFAULT_GENERATE_HEIGHT,
+    DEFAULT_GENERATE_MODEL,
+    DEFAULT_GENERATE_NEGATIVE_PROMPT,
+    DEFAULT_GENERATE_OUTPUT_PATH,
+    DEFAULT_GENERATE_PROMPT,
+    DEFAULT_GENERATE_SEED,
+    DEFAULT_GENERATE_STEPS,
+    DEFAULT_GENERATE_WIDTH,
+)
 from unified_diffusion.registry.models import CUSTOM_REGISTRY_ENV
 
 
 class FakeDiffusion:
+    last_request = None
+
     def __init__(self, cache_dir: str) -> None:
         self.cache = type(
             "CacheView",
@@ -31,6 +46,7 @@ class FakeDiffusion:
         return ["sdxl.base", "local.civitai.omnigenx"]
 
     def run(self, request):
+        type(self).last_request = request
         image = Image.new("RGB", (request.width, request.height), color="white")
         return GenerateResult(
             images=[image],
@@ -68,6 +84,37 @@ def test_cli_run_writes_image(monkeypatch, tmp_path: Path, capsys) -> None:
     assert output_path.exists()
     payload = json.loads(capsys.readouterr().out)
     assert payload["model"] == "sdxl.base@main"
+
+
+def test_cli_run_uses_shared_defaults(monkeypatch, capsys) -> None:
+    monkeypatch.setattr("unified_diffusion.cli.Diffusion", FakeDiffusion)
+    monkeypatch.setattr("PIL.Image.Image.save", lambda self, path: None)
+    FakeDiffusion.last_request = None
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "udiff",
+            "run",
+        ],
+    )
+
+    exit_code = main()
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["out"] == DEFAULT_GENERATE_OUTPUT_PATH
+    assert FakeDiffusion.last_request is not None
+    assert FakeDiffusion.last_request.model == DEFAULT_GENERATE_MODEL
+    assert FakeDiffusion.last_request.prompt == DEFAULT_GENERATE_PROMPT
+    assert FakeDiffusion.last_request.negative_prompt == DEFAULT_GENERATE_NEGATIVE_PROMPT
+    assert FakeDiffusion.last_request.width == DEFAULT_GENERATE_WIDTH
+    assert FakeDiffusion.last_request.height == DEFAULT_GENERATE_HEIGHT
+    assert FakeDiffusion.last_request.steps == DEFAULT_GENERATE_STEPS
+    assert FakeDiffusion.last_request.guidance_scale == DEFAULT_GENERATE_GUIDANCE_SCALE
+    assert FakeDiffusion.last_request.seed == DEFAULT_GENERATE_SEED
+    assert FakeDiffusion.last_request.device == DEFAULT_GENERATE_DEVICE
+    assert FakeDiffusion.last_request.dtype == DEFAULT_GENERATE_DTYPE
 
 
 def test_cli_cache_ls_prints_json(monkeypatch, tmp_path: Path, capsys) -> None:
@@ -305,6 +352,11 @@ def test_cli_guided_run_command_mode(monkeypatch, tmp_path: Path, capsys) -> Non
     assert payload["mode"] == "command"
     assert payload["model"] == "local.civitai.omnigenx"
     assert "--model local.civitai.omnigenx" in payload["command"]
+    assert "--negative-prompt 'blurry, low quality'" in payload["command"]
+    assert "--guidance-scale 6.5" in payload["command"]
+    assert "--seed 1234" in payload["command"]
+    assert "--device mps" in payload["command"]
+    assert "--dtype fp16" in payload["command"]
     assert payload["out"].endswith("outputs/local_civitai_omnigenx.png")
 
 

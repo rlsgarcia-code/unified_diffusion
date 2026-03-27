@@ -7,6 +7,18 @@ from typing import Any
 from PIL import Image
 
 from unified_diffusion.cache.manager import CacheManager, resolve_revision
+from unified_diffusion.defaults import (
+    DEFAULT_GENERATE_DEVICE,
+    DEFAULT_GENERATE_DTYPE,
+    DEFAULT_GENERATE_GUIDANCE_SCALE,
+    DEFAULT_GENERATE_HEIGHT,
+    DEFAULT_GENERATE_MODEL,
+    DEFAULT_GENERATE_NEGATIVE_PROMPT,
+    DEFAULT_GENERATE_PROMPT,
+    DEFAULT_GENERATE_SEED,
+    DEFAULT_GENERATE_STEPS,
+    DEFAULT_GENERATE_WIDTH,
+)
 from unified_diffusion.errors import ProviderError
 from unified_diffusion.providers.base import BaseProvider
 from unified_diffusion.providers.diffusers_provider import DiffusersProvider
@@ -20,17 +32,17 @@ VALID_DTYPES = {"fp16", "bf16", "fp32"}
 
 @dataclass(slots=True)
 class GenerateRequest:
-    model: str
-    prompt: str
-    negative_prompt: str | None = None
-    width: int = 1024
-    height: int = 1024
-    steps: int = 30
-    guidance_scale: float = 7.0
-    seed: int | None = None
+    model: str = DEFAULT_GENERATE_MODEL
+    prompt: str = DEFAULT_GENERATE_PROMPT
+    negative_prompt: str | None = DEFAULT_GENERATE_NEGATIVE_PROMPT
+    width: int = DEFAULT_GENERATE_WIDTH
+    height: int = DEFAULT_GENERATE_HEIGHT
+    steps: int = DEFAULT_GENERATE_STEPS
+    guidance_scale: float = DEFAULT_GENERATE_GUIDANCE_SCALE
+    seed: int | None = DEFAULT_GENERATE_SEED
     num_images: int = 1
-    device: str | None = None
-    dtype: str | None = None
+    device: str | None = DEFAULT_GENERATE_DEVICE
+    dtype: str | None = DEFAULT_GENERATE_DTYPE
     provider: str | None = None
     revision: str | None = None
     extra: dict[str, Any] = field(default_factory=dict)

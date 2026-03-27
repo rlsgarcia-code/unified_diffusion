@@ -73,6 +73,21 @@ def test_run_returns_generate_result_without_network(
     assert result.images[0].size == (64, 64)
 
 
+def test_generate_request_defaults_are_shared() -> None:
+    request = GenerateRequest()
+
+    assert request.model == "sdxl.base"
+    assert request.prompt == "a dramatic product photo, studio lighting, clean background"
+    assert request.negative_prompt == "blurry, low quality"
+    assert request.width == 1024
+    assert request.height == 1024
+    assert request.steps == 30
+    assert request.guidance_scale == 6.5
+    assert request.seed == 1234
+    assert request.device == "mps"
+    assert request.dtype == "fp16"
+
+
 def test_custom_registry_adds_five_models(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     custom_registry_path = tmp_path / "custom-models.json"
     custom_registry_path.write_text(

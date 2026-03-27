@@ -6,10 +6,13 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from service.fastapi_app.main import app
+from service.fastapi_app.schemas import DEFAULT_GENERATE_REQUEST_EXAMPLE
 from unified_diffusion import GenerateResult
 
 
 class FakeDiffusion:
+    last_request = None
+
     def __init__(self, cache_dir: str) -> None:
         self.cache_dir = cache_dir
 
@@ -17,6 +20,7 @@ class FakeDiffusion:
         return ["sdxl.base", "local.civitai.omnigenx"]
 
     def run(self, request):
+        type(self).last_request = request
         image = Image.new("RGB", (request.width, request.height), color="white")
         return GenerateResult(
             images=[image],
@@ -161,3 +165,44 @@ def test_generate(monkeypatch, tmp_path: Path) -> None:
     payload = response.json()
     assert payload["model"] == "sdxl.base@main"
     assert Path(payload["out"]).exists()
+
+
+def test_generate_uses_default_payload_for_empty_json(monkeypatch) -> None:
+    monkeypatch.setattr("service.fastapi_app.main.Diffusion", FakeDiffusion)
+    monkeypatch.setattr("PIL.Image.Image.save", lambda self, path: None)
+    FakeDiffusion.last_request = None
+
+    response = client.post("/generate", json={})
+
+    assert response.status_code == 200
+    assert response.json()["out"] == DEFAULT_GENERATE_REQUEST_EXAMPLE["output_path"]
+    assert FakeDiffusion.last_request is not None
+    assert FakeDiffusion.last_request.model == DEFAULT_GENERATE_REQUEST_EXAMPLE["model"]
+    assert FakeDiffusion.last_request.prompt == DEFAULT_GENERATE_REQUEST_EXAMPLE["prompt"]
+    assert (
+        FakeDiffusion.last_request.negative_prompt
+        == DEFAULT_GENERATE_REQUEST_EXAMPLE["negative_prompt"]
+    )
+    assert FakeDiffusion.last_request.width == DEFAULT_GENERATE_REQUEST_EXAMPLE["width"]
+    assert FakeDiffusion.last_request.height == DEFAULT_GENERATE_REQUEST_EXAMPLE["height"]
+    assert FakeDiffusion.last_request.steps == DEFAULT_GENERATE_REQUEST_EXAMPLE["steps"]
+    assert (
+        FakeDiffusion.last_request.guidance_scale
+        == DEFAULT_GENERATE_REQUEST_EXAMPLE["guidance_scale"]
+    )
+    assert FakeDiffusion.last_request.seed == DEFAULT_GENERATE_REQUEST_EXAMPLE["seed"]
+    assert FakeDiffusion.last_request.device == DEFAULT_GENERATE_REQUEST_EXAMPLE["device"]
+    assert FakeDiffusion.last_request.dtype == DEFAULT_GENERATE_REQUEST_EXAMPLE["dtype"]
+
+
+def test_generate_uses_default_payload_when_body_is_omitted(monkeypatch) -> None:
+    monkeypatch.setattr("service.fastapi_app.main.Diffusion", FakeDiffusion)
+    monkeypatch.setattr("PIL.Image.Image.save", lambda self, path: None)
+    FakeDiffusion.last_request = None
+
+    response = client.post("/generate")
+
+    assert response.status_code == 200
+    assert response.json()["out"] == DEFAULT_GENERATE_REQUEST_EXAMPLE["output_path"]
+    assert FakeDiffusion.last_request is not None
+    assert FakeDiffusion.last_request.model == DEFAULT_GENERATE_REQUEST_EXAMPLE["model"]

@@ -8,6 +8,19 @@ import sys
 from pathlib import Path
 
 from unified_diffusion import Diffusion, GenerateRequest
+from unified_diffusion.defaults import (
+    DEFAULT_GENERATE_DEVICE,
+    DEFAULT_GENERATE_DTYPE,
+    DEFAULT_GENERATE_GUIDANCE_SCALE,
+    DEFAULT_GENERATE_HEIGHT,
+    DEFAULT_GENERATE_MODEL,
+    DEFAULT_GENERATE_NEGATIVE_PROMPT,
+    DEFAULT_GENERATE_OUTPUT_PATH,
+    DEFAULT_GENERATE_PROMPT,
+    DEFAULT_GENERATE_SEED,
+    DEFAULT_GENERATE_STEPS,
+    DEFAULT_GENERATE_WIDTH,
+)
 from unified_diffusion.operations import (
     best_usage_practices,
     configure_registry_path,
@@ -30,17 +43,17 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run_parser = subparsers.add_parser("run", help="Generate an image")
-    run_parser.add_argument("--model", required=True)
-    run_parser.add_argument("--prompt", required=True)
-    run_parser.add_argument("--negative-prompt")
-    run_parser.add_argument("--out", required=True)
-    run_parser.add_argument("--width", type=int, default=1024)
-    run_parser.add_argument("--height", type=int, default=1024)
-    run_parser.add_argument("--steps", type=int, default=30)
-    run_parser.add_argument("--guidance-scale", type=float, default=7.0)
-    run_parser.add_argument("--seed", type=int)
-    run_parser.add_argument("--device")
-    run_parser.add_argument("--dtype")
+    run_parser.add_argument("--model", default=DEFAULT_GENERATE_MODEL)
+    run_parser.add_argument("--prompt", default=DEFAULT_GENERATE_PROMPT)
+    run_parser.add_argument("--negative-prompt", default=DEFAULT_GENERATE_NEGATIVE_PROMPT)
+    run_parser.add_argument("--out", default=DEFAULT_GENERATE_OUTPUT_PATH)
+    run_parser.add_argument("--width", type=int, default=DEFAULT_GENERATE_WIDTH)
+    run_parser.add_argument("--height", type=int, default=DEFAULT_GENERATE_HEIGHT)
+    run_parser.add_argument("--steps", type=int, default=DEFAULT_GENERATE_STEPS)
+    run_parser.add_argument("--guidance-scale", type=float, default=DEFAULT_GENERATE_GUIDANCE_SCALE)
+    run_parser.add_argument("--seed", type=int, default=DEFAULT_GENERATE_SEED)
+    run_parser.add_argument("--device", default=DEFAULT_GENERATE_DEVICE)
+    run_parser.add_argument("--dtype", default=DEFAULT_GENERATE_DTYPE)
     run_parser.add_argument("--cache-dir", default=str(settings.cache_dir))
     run_parser.add_argument("--registry-path")
 
@@ -319,6 +332,22 @@ def _build_run_command(model: str, prompt: str, out: Path, cache_dir: Path) -> s
         model,
         "--prompt",
         prompt,
+        "--negative-prompt",
+        DEFAULT_GENERATE_NEGATIVE_PROMPT,
+        "--width",
+        str(DEFAULT_GENERATE_WIDTH),
+        "--height",
+        str(DEFAULT_GENERATE_HEIGHT),
+        "--steps",
+        str(DEFAULT_GENERATE_STEPS),
+        "--guidance-scale",
+        str(DEFAULT_GENERATE_GUIDANCE_SCALE),
+        "--seed",
+        str(DEFAULT_GENERATE_SEED),
+        "--device",
+        DEFAULT_GENERATE_DEVICE,
+        "--dtype",
+        DEFAULT_GENERATE_DTYPE,
         "--out",
         str(out),
         "--cache-dir",

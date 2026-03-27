@@ -15,6 +15,7 @@ from service.fastapi_app.schemas import (
     RegisterLocalResponseBody,
     VerifyFileRequestBody,
     VerifyFileResponseBody,
+    build_default_generate_request_body,
 )
 from unified_diffusion import (
     Diffusion,
@@ -176,7 +177,8 @@ def register_local(request: RegisterLocalRequestBody) -> RegisterLocalResponseBo
         }
     },
 )
-def generate(request: GenerateRequestBody) -> GenerateResponseBody:
+def generate(request: GenerateRequestBody | None = None) -> GenerateResponseBody:
+    request = request or build_default_generate_request_body()
     engine = _engine()
     output_dir = get_settings().output_dir
     output_path = (

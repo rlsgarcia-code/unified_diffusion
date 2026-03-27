@@ -4,7 +4,10 @@ from types import SimpleNamespace
 import pytest
 
 from unified_diffusion.errors import ProviderError
-from unified_diffusion.providers.diffusers_provider import DiffusersProvider
+from unified_diffusion.providers.diffusers_provider import (
+    DEFAULT_GENERATE_DEVICE,
+    DiffusersProvider,
+)
 
 
 class _FakeMPSBackend:
@@ -47,10 +50,20 @@ def test_resolve_device_errors_when_mps_is_explicit_and_missing() -> None:
     provider = DiffusersProvider()
     torch = _FakeTorch(mps_available=False, cuda_available=False)
 
-    with pytest.raises(ProviderError) as exc:
-        provider._resolve_device(torch, "mps")
+    device, warnings = provider._resolve_device(torch, DEFAULT_GENERATE_DEVICE)
 
-    assert "MPS was requested explicitly" in str(exc.value)
+    assert device == "cpu"
+    assert "falling back to CPU" in warnings[0]
+
+
+def test_resolve_device_errors_when_cuda_is_explicit_and_missing() -> None:
+    provider = DiffusersProvider()
+    torch = _FakeTorch(mps_available=False, cuda_available=False)
+
+    with pytest.raises(ProviderError) as exc:
+        provider._resolve_device(torch, "cuda")
+
+    assert "CUDA was requested explicitly" in str(exc.value)
 
 
 def test_resolve_dtype_promotes_fp16_on_cpu_to_fp32() -> None:
